@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import axp.tool.apkextractor.R;
+
 public class PermissionResolver {
 	private static final int REQUEST_CODE = 100500;
 

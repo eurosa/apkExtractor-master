@@ -24,6 +24,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import axp.tool.apkextractor.R;
+
 public class ApkListAdapter extends RecyclerView.Adapter<ApkListAdapter.ViewHolder> {
 	private ThreadFactory tFactory = new ThreadFactory() {
 		@Override
@@ -128,9 +130,9 @@ public class ApkListAdapter extends RecyclerView.Adapter<ApkListAdapter.ViewHold
 		public ViewHolder(View v, ApkListAdapter adapter) {
 			super(v);
 			this.adapter = adapter;
-			txtPackageName = (TextView)v.findViewById(R.id.txtPackageName);
-			imgIcon = (ImageView)v.findViewById(R.id.imgIcon);
-			txtAppName = (TextView)v.findViewById(R.id.txtAppName);
+			txtPackageName = v.findViewById(R.id.txtPackageName);
+			imgIcon = v.findViewById(R.id.imgIcon);
+			txtAppName = v.findViewById(R.id.txtAppName);
 			v.setOnClickListener(this);
 		}
 

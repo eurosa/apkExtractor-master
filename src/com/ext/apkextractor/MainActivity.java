@@ -1,12 +1,16 @@
 package com.ext.apkextractor;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -21,7 +25,15 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
+
+import axp.tool.apkextractor.R;
 
 public class MainActivity extends AppCompatActivity {
 	private ApkListAdapter apkListAdapter;
@@ -75,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
 		final SearchView searchView = (SearchView)MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
 		searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 		searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+			@SuppressLint("RestrictedApi")
 			@Override
 			public void onFocusChange(View view, boolean queryTextFocused) {
 				if (!queryTextFocused && searchView.getQuery().length() < 1) {
@@ -104,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
 		final Extractor extractor = new Extractor();
 		try {
 			String dst = extractor.extractWithoutRoot(info);
+			shareApplication(dst);
 			Toast.makeText(this, String.format(this.getString(R.string.toast_extracted), dst), Toast.LENGTH_SHORT).show();
 			return;
 		} catch (Exception ex) {
@@ -117,6 +131,9 @@ public class MainActivity extends AppCompatActivity {
 				public void onClick(DialogInterface dialog, int which) {
 					try {
 						String dst = extractor.extractWithRoot(info);
+
+						shareApplication(dst);
+
 						Toast.makeText(MainActivity.this, String.format(MainActivity.this.getString(R.string.toast_extracted), dst), Toast.LENGTH_SHORT).show();
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -125,6 +142,56 @@ public class MainActivity extends AppCompatActivity {
 				}
 			}).setNegativeButton(R.string.alert_root_no, null)
 			.show();
+	}
+
+
+	private void shareApplication(String dst) {
+		ApplicationInfo app = getApplicationContext().getApplicationInfo();
+		String filePath = dst;
+
+		Intent intent = new Intent(Intent.ACTION_SEND);
+
+		// MIME of .apk is "application/vnd.android.package-archive".
+		// but Bluetooth does not accept this. Let's use "*/*" instead.
+		intent.setType("*/*");
+
+		// Append file and send Intent
+		File originalApk = new File(filePath);
+
+		try {
+			//Make new directory in new location
+			File tempFile = new File(getExternalCacheDir() + "/ExtractedApk");
+			//If directory doesn't exists create new
+			if (!tempFile.isDirectory())
+				if (!tempFile.mkdirs())
+					return;
+			//Get application's name and convert to lowercase
+			tempFile = new File(tempFile.getPath() + "/" + getString(app.labelRes).replace(" ","").toLowerCase() + ".apk");
+			//If file doesn't exists create new
+			if (!tempFile.exists()) {
+				if (!tempFile.createNewFile()) {
+					return;
+				}
+			}
+			//Copy file to new location
+			InputStream in = new FileInputStream(originalApk);
+			OutputStream out = new FileOutputStream(tempFile);
+
+			byte[] buf = new byte[1024];
+			int len;
+			while ((len = in.read(buf)) > 0) {
+				out.write(buf, 0, len);
+			}
+			in.close();
+			out.close();
+			System.out.println("File copied.");
+			//Open share dialog
+			intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(tempFile));
+			startActivity(Intent.createChooser(intent, "Share app via"));
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	class Loader extends AsyncTask<Void, PackageInfo, Void> {
