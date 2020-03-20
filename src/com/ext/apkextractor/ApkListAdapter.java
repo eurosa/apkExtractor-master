@@ -46,6 +46,11 @@ public class ApkListAdapter extends RecyclerView.Adapter<ApkListAdapter.ViewHold
 
 	int names_to_load = 0;
 
+	private static final int LIST_AD_DELTA = 3;
+	private static final int CONTENT = 0;
+	private static final int AD = 1;
+
+
 	private Map<String, String>   cache_appName = Collections.synchronizedMap(new LinkedHashMap<String, String>(10, 1.5f, true));
 	private Map<String, Drawable> cache_appIcon = Collections.synchronizedMap(new LinkedHashMap<String, Drawable>(10, 1.5f, true));
 
@@ -78,6 +83,17 @@ public class ApkListAdapter extends RecyclerView.Adapter<ApkListAdapter.ViewHold
 			});
 		}
 	}
+
+
+	@Override
+	public int getItemViewType(int position) {
+		if (position > 0 && position % LIST_AD_DELTA == 0) {
+			return AD;
+		}
+		return CONTENT;
+	}
+
+
 
 	class GuiLoader implements Runnable {
 		private ViewHolder  viewHolder;
@@ -166,6 +182,7 @@ public class ApkListAdapter extends RecyclerView.Adapter<ApkListAdapter.ViewHold
 
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+
 		return new ViewHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item, viewGroup, false), this);
 	}
 

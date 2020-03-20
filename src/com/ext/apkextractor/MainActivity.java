@@ -22,8 +22,17 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,21 +49,38 @@ public class MainActivity extends AppCompatActivity {
 
 	private ProgressBar progressBar;
 	private PermissionResolver permissionResolver;
+	private AdView mAdView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
-		RecyclerView listView = (RecyclerView)findViewById(android.R.id.list);
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
+        mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
 
-		apkListAdapter = new ApkListAdapter(this);
+
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+
+
+		RecyclerView listView = findViewById(android.R.id.list);
+
+
+
+
+
+	apkListAdapter = new ApkListAdapter(this);
 		listView.setLayoutManager(new LinearLayoutManager(this));
 		listView.setAdapter(apkListAdapter);
 
-		progressBar = (ProgressBar) findViewById(android.R.id.progress);
+		progressBar = findViewById(android.R.id.progress);
 		progressBar.setVisibility(View.VISIBLE);
 
 		new Loader(this).execute();
